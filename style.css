@@ -1,0 +1,21 @@
+/*
+Theme Name: Snippet Jam
+Theme URI: https://snippetjam.tech/
+Description: Custom interactive child theme for the Snippet Jam technology event website.
+Author: Snippet Jam
+Template: twentytwentyfive
+Version: 1.0.0
+Text Domain: snippetjam
+*/
+
+/*
+ * Snippet Jam Design Direction
+ * ----------------------------
+ * No gradients.
+ * No Tailwind.
+ * No glassmorphism.
+ * Avoid generic centered SaaS layouts.
+ * Prefer asymmetric editorial layouts.
+ * Sharp/minimally rounded geometry.
+ * Strong typography and purposeful interaction.
+ */

@@ -1,0 +1,10 @@
+.sj-react-test {
+    padding: 80px 6vw;
+}
+
+.sj-react-test h1 {
+    margin: 30px 0;
+    font-size: clamp(4rem, 11vw, 10rem);
+    line-height: 0.82;
+    letter-spacing: -0.06em;
+}
