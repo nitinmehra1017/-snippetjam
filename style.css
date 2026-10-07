@@ -5,6 +5,8 @@ Description: Custom interactive child theme for the Snippet Jam technology event
 Author: Snippet Jam
 Template: twentytwentyfive
 Version: 1.0.0
+Requires at least: 6.7
+Requires PHP: 7.2
 Text Domain: snippetjam
 */
 

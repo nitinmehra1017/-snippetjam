@@ -1,0 +1,8 @@
+<svg viewBox="0 0 480 320" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2">
+  <path class="sj-diagram-grid" d="M0 80H480M0 160H480M0 240H480M80 0V320M160 0V320M240 0V320M320 0V320M400 0V320"/>
+  <path class="sj-diagram-frame" d="M24 54V24H54M426 24H456V54M456 266V296H426M54 296H24V266"/>
+  <g class="sj-diagram-build"><path d="M240 52L366 124V204L240 276L114 204V124Z M114 124L240 196L366 124 M240 196V276 M177 88L303 160V240 M303 88L177 160V240"/><path class="sj-diagram-accent" d="M240 52V132L366 204 M240 132L114 204"/><circle cx="240" cy="132" r="10"/></g>
+  <g class="sj-diagram-solve"><path d="M180 100L120 160L180 220 M300 100L360 160L300 220 M260 78L220 242"/><rect x="96" y="52" width="288" height="216"/><path class="sj-diagram-accent" d="M96 72H384M112 60H118M126 60H132M140 60H146 M136 248H206"/></g>
+  <g class="sj-diagram-experiment"><rect x="156" y="76" width="168" height="148"/><path d="M190 224V258H152M290 224V258H328 M156 120H112V174H76 M324 120H368V174H404 M240 76V50"/><circle cx="240" cy="38" r="12"/><circle cx="204" cy="130" r="18"/><circle cx="276" cy="130" r="18"/><path class="sj-diagram-accent" d="M196 186H284 M214 176V196M240 176V196M266 176V196"/></g>
+  <g class="sj-diagram-learn"><path d="M114 94L240 66L366 94V248L240 220L114 248Z M240 66V220"/><path class="sj-diagram-accent" d="M138 126L216 108 M138 154L216 136 M138 182L198 168 M264 108L342 126 M264 136L342 154 M264 164L320 176"/><path d="M102 106H88V270L240 242L392 270V106H378"/></g>
+</svg>

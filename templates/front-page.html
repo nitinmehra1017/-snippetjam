@@ -1,3 +1,12 @@
-<!-- wp:html -->
-<div id="snippetjam-react-root"></div>
-<!-- /wp:html -->
+<!-- wp:group {"className":"sj-home","layout":{"type":"default"}} -->
+<div class="wp-block-group sj-home">
+    <!-- wp:html --><a class="sj-skip-link" href="#sj-main">Skip to content</a><!-- /wp:html -->
+    <!-- wp:template-part {"slug":"homepage-header","tagName":"header","className":"sj-header"} /-->
+    <!-- wp:group {"tagName":"main","anchor":"sj-main","className":"sj-main","layout":{"type":"default"}} -->
+    <main id="sj-main" class="wp-block-group sj-main" tabindex="-1">
+        <!-- wp:pattern {"slug":"snippetjam/front-page-content"} /-->
+    </main>
+    <!-- /wp:group -->
+    <!-- wp:template-part {"slug":"homepage-footer","tagName":"footer","className":"sj-footer"} /-->
+</div>
+<!-- /wp:group -->
