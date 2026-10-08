@@ -13,6 +13,8 @@ export function JourneyProgress() {
         let preview = null;
         let displayed = null;
         let manualSelection = false;
+        let selectionScrollGuard = false;
+        let scrollSettleTimer = null;
         let suppressHover = false;
         let pointerPosition = null;
         let lastScrollY = window.scrollY;
@@ -49,13 +51,36 @@ export function JourneyProgress() {
             removeListeners.push(() => target.removeEventListener(name, callback, options));
         }
 
+        function resumeScrollInput() {
+            selectionScrollGuard = false;
+            window.clearTimeout(scrollSettleTimer);
+            scrollSettleTimer = null;
+            // Keep the selection until this input actually moves the viewport.
+        }
+
+        function waitForSelectionScroll() {
+            window.clearTimeout(scrollSettleTimer);
+            scrollSettleTimer = window.setTimeout(() => {
+                selectionScrollGuard = false;
+                scrollSettleTimer = null;
+                lastScrollY = window.scrollY;
+                // Settling alone must not replace the explicitly selected step.
+            }, 150);
+        }
+
         steps.forEach((step, index) => {
             const button = buttons[index];
             if (!button) return;
             button.disabled = false;
             const choose = () => {
                 manualSelection = true;
+                selectionScrollGuard = true;
                 preview = null;
+                // Focus/click can reveal a row before its scroll event is delivered.
+                lastScrollY = window.scrollY;
+                if (frame !== null) window.cancelAnimationFrame(frame);
+                frame = null;
+                waitForSelectionScroll();
                 select(index);
             };
             listen(button, 'focus', choose);
@@ -84,12 +109,39 @@ export function JourneyProgress() {
         list.dataset.interactive = 'true';
         select(0);
 
+        listen(window, 'wheel', (event) => {
+            if (event.deltaY !== 0) resumeScrollInput();
+        }, { passive: true });
+        listen(window, 'touchmove', resumeScrollInput, { passive: true });
+        listen(window, 'pointerdown', (event) => {
+            if (!event.target.closest?.('.sj-journey-trigger')) resumeScrollInput();
+        }, { passive: true });
+        listen(window, 'resize', () => {
+            if (!manualSelection) return;
+            // Viewport changes can anchor-scroll without a new navigation gesture.
+            selectionScrollGuard = true;
+            lastScrollY = window.scrollY;
+            waitForSelectionScroll();
+        });
+        listen(window, 'keydown', (event) => {
+            if (event.defaultPrevented || event.target.isContentEditable ||
+                event.target.closest?.('input, textarea, select, [role="textbox"], [role="slider"], [role="spinbutton"]')) return;
+            if (!['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' '].includes(event.key)) return;
+            if (event.key === ' ' && event.target.closest?.('button, summary, [role="button"]')) return;
+            resumeScrollInput();
+        });
+
         listen(window, 'scroll', () => {
             if (window.scrollY === lastScrollY) return;
             lastScrollY = window.scrollY;
-            manualSelection = false;
             preview = null;
             suppressHover = true; // A stationary pointer must not override scrolling rows.
+            if (manualSelection && selectionScrollGuard) {
+                waitForSelectionScroll();
+                show(selected);
+                return;
+            }
+            manualSelection = false;
             if (frame !== null) return;
             frame = window.requestAnimationFrame(() => {
                 frame = null;
@@ -106,6 +158,7 @@ export function JourneyProgress() {
         return () => {
             observer?.disconnect();
             if (frame !== null) window.cancelAnimationFrame(frame);
+            window.clearTimeout(scrollSettleTimer);
             removeListeners.forEach((remove) => remove());
             buttons.forEach((button) => {
                 if (!button) return;
