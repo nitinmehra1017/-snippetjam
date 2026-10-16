@@ -9,6 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 require_once get_stylesheet_directory() . '/inc/homepage-content.php';
 require_once get_stylesheet_directory() . '/inc/event-index.php';
+require_once get_stylesheet_directory() . '/inc/event-links.php';
 
 /**
  * Use file contents so cache versions remain reliable across Git deployments.
@@ -27,7 +28,7 @@ function snippetjam_asset_version( $relative_path ) {
 }
 
 /**
- * Load child overrides after the parent and enhance only the front page.
+ * Load child overrides after the parent and keep event assets page-specific.
  */
 function snippetjam_enqueue_assets() {
     wp_enqueue_style(
@@ -36,6 +37,28 @@ function snippetjam_enqueue_assets() {
         array( 'twentytwentyfive-style' ),
         snippetjam_asset_version( 'style.css' )
     );
+
+    if ( ! is_front_page() && is_page( 'hackathon' ) ) {
+        $event_css = snippetjam_asset_version( 'dist/hackathon/hackathon.css' );
+        $event_js  = snippetjam_asset_version( 'dist/hackathon/hackathon.js' );
+        if ( false !== $event_css ) {
+            wp_enqueue_style(
+                'snippetjam-hackathon',
+                get_stylesheet_directory_uri() . '/dist/hackathon/hackathon.css',
+                array( 'snippetjam-style' ),
+                $event_css
+            );
+        }
+        if ( false !== $event_css && false !== $event_js ) {
+            wp_enqueue_script_module(
+                'snippetjam-hackathon',
+                get_stylesheet_directory_uri() . '/dist/hackathon/hackathon.js',
+                array(),
+                $event_js
+            );
+        }
+        return;
+    }
 
     if ( ! is_front_page() ) {
         return;
@@ -77,3 +100,12 @@ function snippetjam_homepage_body_class( $classes ) {
     return $classes;
 }
 add_filter( 'body_class', 'snippetjam_homepage_body_class' );
+
+/** The Hackathon canvas is isolated from the homepage and other page templates. */
+function snippetjam_hackathon_body_class( $classes ) {
+    if ( ! is_front_page() && is_page( 'hackathon' ) ) {
+        $classes[] = 'snippetjam-hackathon';
+    }
+    return $classes;
+}
+add_filter( 'body_class', 'snippetjam_hackathon_body_class' );

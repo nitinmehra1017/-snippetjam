@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "vite build --watch",
-    "build": "vite build"
+    "build": "vite build && vite build --config vite.hackathon.config.js",
+    "dev:hackathon": "vite build --config vite.hackathon.config.js --watch"
   },
   "dependencies": {
     "react": "18.3.1",
