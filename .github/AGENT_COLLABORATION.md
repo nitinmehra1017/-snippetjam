@@ -113,7 +113,7 @@ Automatic tasks are intentionally limited to frontend application paths: `src`,
 `style.css`, and root Markdown documentation other than `AGENTS.md`. They cannot
 change workflows, tests, instructions, dependencies, build configs, hidden files,
 secret/key files, executable modes, symlinks or submodules. Broader tasks require
-a separate maintainer-reviewed coding task. Patch transport is limited to 48,000
+a separate maintainer-reviewed coding task. Patch transport is limited to 350,000
 characters; split larger tasks. A task body is limited to 16,000 characters.
 
 The CI entry point is `node .github/agents/ci.mjs`. It tests workflow policy,
@@ -146,7 +146,7 @@ is added. A human reviews the PR and merges only after required checks pass.
 ## Setup verification status
 
 Local policy tests, workflow lint and application regression results are reported
-in the setup conversation: 22 policy/diagnostic tests, all three workflows passing actionlint,
+in the setup conversation: 23 policy/diagnostic/transport tests, all three workflows passing actionlint,
 five production builds, 29 PHP syntax checks, 83 PHP contracts and 851 browser/
 accessibility/block-parser/regression assertions passed locally. No application
 source or compiled page assets changed. The first push successfully created the

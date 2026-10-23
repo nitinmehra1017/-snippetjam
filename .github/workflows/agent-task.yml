@@ -104,15 +104,20 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
       - uses: ./.github/actions/prepare
+      - name: Receive serialized patch without environment-size limits
+        run: |
+          # toJSON produces a JSON string with embedded newlines escaped. Combined
+          # with a quoted heredoc, task data cannot terminate it or execute shell code.
+          node .github/agents/write-result.cjs "$RUNNER_TEMP/codex-result.json" <<'SNIPPETJAM_JSON_STRING'
+          ${{ toJSON(needs.generate.outputs.result) }}
+          SNIPPETJAM_JSON_STRING
       - id: patch
         name: Apply frontend-only patch and create a local test commit
-        env:
-          CODEX_RESULT: ${{ needs.generate.outputs.result }}
         run: |
           node - <<'JS'
           const fs = require('node:fs');
           const { parseResult, applyPatch, git } = require('./.github/agents/policy.cjs');
-          const result = parseResult(process.env.CODEX_RESULT);
+          const result = parseResult(fs.readFileSync(process.env.RUNNER_TEMP + '/codex-result.json', 'utf8'));
           const applied = applyPatch(result.patch, process.env.RUNNER_TEMP + '/validated-task/changes.patch');
           fs.appendFileSync(process.env.GITHUB_OUTPUT, 'sha256=' + applied.sha256 + '\n');
           git('-c', 'user.name=github-actions[bot]', '-c', 'user.email=41898282+github-actions[bot]@users.noreply.github.com', 'commit', '-m', 'Test approved agent candidate');

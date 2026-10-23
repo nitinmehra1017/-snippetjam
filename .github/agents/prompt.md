@@ -26,6 +26,6 @@ Return JSON matching the supplied schema. patch must contain the COMPLETE valid
 git diff --binary, including new files. You can generate new-file diffs with
 git diff --no-index -- /dev/null <relative-path> (exit 1 means differences), and
 combine them with git diff for tracked changes. Use standard a/ and b/ paths.
-Do not include APPROVED_TASK.json, the prompt, or generated QA caches. Keep the patch below 48000 characters; larger
+Do not include APPROVED_TASK.json, the prompt, or generated QA caches. Keep the patch below 350000 characters; larger
 tasks need splitting. The summary must not contain secrets. Publication happens
 in a separate job only after the patch has passed independent regression checks.

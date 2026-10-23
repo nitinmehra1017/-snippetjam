@@ -45,9 +45,9 @@ async function approve({ github, context }) {
 }
 
 function parseResult(raw) {
-  if (typeof raw !== 'string' || Buffer.byteLength(raw) > 100000) throw new Error('Missing or oversized Codex result.');
+  if (typeof raw !== 'string' || raw.length > 400000 || Buffer.byteLength(raw) > 900000) throw new Error('Missing or oversized Codex result.');
   const result = JSON.parse(raw);
-  if (typeof result.patch !== 'string' || !result.patch.startsWith('diff --git ') || result.patch.length > 48000) throw new Error('Expected a nonempty git patch of at most 48000 characters.');
+  if (typeof result.patch !== 'string' || !result.patch.startsWith('diff --git ') || result.patch.length > 350000) throw new Error('Expected a nonempty git patch of at most 350000 characters.');
   if (typeof result.summary !== 'string' || result.summary.length > 2000) throw new Error('Invalid result summary.');
   return result;
 }

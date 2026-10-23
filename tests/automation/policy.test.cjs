@@ -74,8 +74,21 @@ test('issue text stays data, including shell syntax and GitHub expressions', asy
   assert.equal(task.body, text);
 });
 test('patch transport rejects empty, malformed and oversized data', () => {
-  for (const value of ['', '{}', JSON.stringify({ patch: '', summary: '' }), JSON.stringify({ patch: 'diff --git ' + 'x'.repeat(48000), summary: '' })]) assert.throws(() => parseResult(value));
+  for (const value of ['', '{}', JSON.stringify({ patch: '', summary: '' }), JSON.stringify({ patch: 'diff --git ' + 'x'.repeat(350000), summary: '' })]) assert.throws(() => parseResult(value));
   assert.equal(parseResult(JSON.stringify({ patch: 'diff --git a/a b/a\n', summary: 'Example' })).summary, 'Example');
+});
+test('large serialized patches cannot execute shell syntax or close the quoted heredoc', () => {
+  const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'snippetjam-transport-'));
+  const file = path.join(temp, 'result.json');
+  const marker = path.join(temp, 'must-not-exist');
+  const raw = JSON.stringify({ patch: 'diff --git ' + 'x'.repeat(150000), summary: `\nSNIPPETJAM_JSON_STRING\ntouch ${marker}\n$(touch ${marker})\n\`touch ${marker}\`\n` });
+  try {
+    const script = path.join(temp, 'receive.sh');
+    fs.writeFileSync(script, `node .github/agents/write-result.cjs "$1" <<'SNIPPETJAM_JSON_STRING'\n${JSON.stringify(raw)}\nSNIPPETJAM_JSON_STRING\n`);
+    execFileSync('bash', [script, file], { stdio: 'pipe' });
+    assert.equal(fs.readFileSync(file, 'utf8'), raw); assert.ok(!fs.existsSync(marker));
+    assert.equal(parseResult(raw).patch.length, 150011);
+  } finally { fs.rmSync(temp, { recursive: true, force: true }); }
 });
 test('frontend scope excludes workflow, dependency, secret, traversal, instruction and test changes', () => {
   for (const name of ['.github/workflows/ci.yml', 'package.json', 'package-lock.json', 'tests/test.js', 'src/.env', 'src/../AGENTS.md', 'src/AGENTS.md', 'src/AGENTS.override.md', 'assets/private.key', 'vite.config.js', '../functions.php']) assert.equal(allowedPath(name), false, name);
