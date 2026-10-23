@@ -103,3 +103,15 @@ test('real git patches apply; protected-file and symlink patches are refused', (
     assert.throws(() => applyPatch(linkPatch, path.join(temp, 'symlink.patch')), /regular, non-executable/);
   } finally { process.chdir(original); fs.rmSync(temp, { recursive: true, force: true }); }
 });
+test('hosted diagnostics record assertion locations without raw actual values', () => {
+  const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'snippetjam-diagnostics-'));
+  const summary = path.join(temp, 'summary.md');
+  try {
+    assert.throws(() => execFileSync(process.execPath, ['--require', path.resolve('.github/agents/diagnostics.cjs'), '-e', "require('node:assert/strict').equal('PRIVATE_ACTUAL', 'expected', 'example assertion')"], {
+      env: { ...process.env, GITHUB_STEP_SUMMARY: summary }, stdio: 'pipe'
+    }));
+    const text = fs.readFileSync(summary, 'utf8');
+    assert.ok(text.includes('ERR_ASSERTION')); assert.ok(text.includes('example assertion'));
+    assert.ok(!text.includes('PRIVATE_ACTUAL'));
+  } finally { fs.rmSync(temp, { recursive: true, force: true }); }
+});

@@ -146,10 +146,14 @@ is added. A human reviews the PR and merges only after required checks pass.
 ## Setup verification status
 
 Local policy tests, workflow lint and application regression results are reported
-in the setup conversation: 21 policy tests, all three workflows passing actionlint,
+in the setup conversation: 22 policy/diagnostic tests, all three workflows passing actionlint,
 five production builds, 29 PHP syntax checks, 83 PHP contracts and 851 browser/
 accessibility/block-parser/regression assertions passed locally. No application
-source or compiled page assets changed. A successful Git push is not proof of a hosted Actions
+source or compiled page assets changed. The first push successfully created the
+live `agent-task` label, confirmed on GitHub's label page and its successful
+bootstrap run. Hosted CI initially failed and is being diagnosed separately;
+passing local checks alone does not establish a passing hosted workflow.
+A successful Git push is not proof of a hosted Actions
 run. This environment's GitHub API proxy returned HTTP 403 even for read-only
 metadata requests, so API label creation, Actions settings, secrets, rulesets,
 dispatch, hosted statuses and PR creation cannot be asserted from those requests.
