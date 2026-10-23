@@ -39,7 +39,7 @@ jobs:
           ref: ${{ github.event.repository.default_branch }}
           persist-credentials: false
       - id: approval
-        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         with:
           script: |
             const { approve } = require(process.env.GITHUB_WORKSPACE + '/.github/agents/policy.cjs');
@@ -156,7 +156,7 @@ jobs:
         env:
           APPROVED_TASK: ${{ needs.approve.outputs.task }}
           EXPECTED_PATCH_SHA256: ${{ needs.validate.outputs.patch_sha256 }}
-        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         with:
           script: |
             const fs = require('node:fs');
@@ -187,7 +187,7 @@ jobs:
     permissions:
       issues: write
     steps:
-      - uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+      - uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           APPROVED_TASK: ${{ needs.approve.outputs.task }}
           DRY_RUN: ${{ needs.approve.outputs.dry_run }}

@@ -151,8 +151,9 @@ five production builds, 29 PHP syntax checks, 83 PHP contracts and 851 browser/
 accessibility/block-parser/regression assertions passed locally. No application
 source or compiled page assets changed. The first push successfully created the
 live `agent-task` label, confirmed on GitHub's label page and its successful
-bootstrap run. Hosted CI initially failed and is being diagnosed separately;
-passing local checks alone does not establish a passing hosted workflow.
+bootstrap run. Hosted CI initially exposed a missing ripgrep prerequisite in the
+runner image; preparation now installs ripgrep, PHP CLI and ACL explicitly.
+Passing local checks alone does not establish a passing hosted workflow.
 A successful Git push is not proof of a hosted Actions
 run. This environment's GitHub API proxy returned HTTP 403 even for read-only
 metadata requests, so API label creation, Actions settings, secrets, rulesets,

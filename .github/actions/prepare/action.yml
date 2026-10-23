@@ -8,7 +8,10 @@ runs:
         node-version: '24'
     - shell: bash
       run: |
+        sudo apt-get update
+        sudo apt-get install --no-install-recommends -y acl php-cli ripgrep
         command -v php
+        command -v rg
         npm ci --no-audit --no-fund
         npm install --prefix node_modules/.cache/coding-qa --no-audit --no-fund --package-lock=false --save-exact @axe-core/playwright@4.10.2 @wordpress/block-serialization-default-parser@5.35.0 playwright-core@1.64.1
         node node_modules/.cache/coding-qa/node_modules/playwright-core/cli.js install --with-deps chromium
