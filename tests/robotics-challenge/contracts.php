@@ -53,5 +53,5 @@ check( strpos( $content, '<h1' ) === false, 'no extra H1' );
 foreach ( array( 'explore', 'preparation', 'eligibility', 'faq', 'registration' ) as $section ) {
     check( strpos( $content, 'id="sjr-' . $section . '"' ) !== false, $section . ' exists' );
 }
-check( strpos( file_get_contents( $theme_root . '/style.css' ), 'Version: 1.0.3' ) !== false, 'pattern metadata cache release increment' );
+check( preg_match( '/^Version: ([0-9.]+)/m', file_get_contents( $theme_root . '/style.css' ), $theme_version ) && version_compare( $theme_version[1], '1.0.3', '>=' ), 'pattern metadata cache release increment' );
 echo $checks . ' robotics PHP architecture contracts passed.' . PHP_EOL;

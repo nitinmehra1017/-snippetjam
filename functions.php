@@ -104,6 +104,28 @@ function snippetjam_enqueue_assets() {
         return;
     }
 
+    if ( ! is_front_page() && is_page( 'workshops' ) ) {
+        $workshops_css = snippetjam_asset_version( 'dist/workshops/workshops.css' );
+        $workshops_js  = snippetjam_asset_version( 'dist/workshops/workshops.js' );
+        if ( false !== $workshops_css ) {
+            wp_enqueue_style(
+                'snippetjam-workshops',
+                get_stylesheet_directory_uri() . '/dist/workshops/workshops.css',
+                array( 'snippetjam-style' ),
+                $workshops_css
+            );
+        }
+        if ( false !== $workshops_css && false !== $workshops_js ) {
+            wp_enqueue_script_module(
+                'snippetjam-workshops',
+                get_stylesheet_directory_uri() . '/dist/workshops/workshops.js',
+                array(),
+                $workshops_js
+            );
+        }
+        return;
+    }
+
     if ( ! is_front_page() ) {
         return;
     }
@@ -171,3 +193,12 @@ function snippetjam_robotics_body_class( $classes ) {
     return $classes;
 }
 add_filter( 'body_class', 'snippetjam_robotics_body_class' );
+
+/** Keep learning-journal presentation on the Workshops page. */
+function snippetjam_workshops_body_class( $classes ) {
+    if ( ! is_front_page() && is_page( 'workshops' ) ) {
+        $classes[] = 'snippetjam-workshops';
+    }
+    return $classes;
+}
+add_filter( 'body_class', 'snippetjam_workshops_body_class' );
