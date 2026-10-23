@@ -117,6 +117,8 @@ a separate maintainer-reviewed coding task. Patch transport is limited to 350,00
 characters; split larger tasks. A task body is limited to 16,000 characters.
 
 The CI entry point is `node .github/agents/ci.mjs`. It tests workflow policy,
+and the hosted CI workflow also transports a 150 KB nonsecret fixture between
+jobs using the same serialized-patch path, without invoking Codex. It then
 builds all five production entries, checks committed/dist reproducibility including
 untracked generated files, then runs Coding, Robotics and Workshops suites. Those
 cover PHP/compiled-JS syntax, WordPress block parsing, responsive layouts at 13

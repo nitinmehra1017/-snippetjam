@@ -10,8 +10,24 @@ concurrency:
   group: checks-${{ github.ref }}
   cancel-in-progress: true
 jobs:
+  transport_fixture:
+    name: Prepare nonsecret transport fixture
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      result: ${{ steps.fixture.outputs.result }}
+    steps:
+      - id: fixture
+        run: |
+          node - <<'JS'
+          const fs = require('node:fs');
+          const result = JSON.stringify({patch: 'diff --git ' + 'x'.repeat(150000), summary: 'Nonsecret transport smoke fixture'});
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, 'result=' + result + '\n');
+          JS
   checks:
     name: SnippetJam checks
+    needs: transport_fixture
+    if: always()
     runs-on: ubuntu-24.04
     timeout-minutes: 25
     steps:
@@ -19,5 +35,19 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
+      - name: Verify bundle-sized cross-job transport without a Codex API call
+        env:
+          FIXTURE_RESULT: ${{ needs.transport_fixture.result }}
+        run: |
+          test "$FIXTURE_RESULT" = success
+          node .github/agents/write-result.cjs "$RUNNER_TEMP/transport-smoke.json" <<'SNIPPETJAM_JSON_STRING'
+          ${{ toJSON(needs.transport_fixture.outputs.result) }}
+          SNIPPETJAM_JSON_STRING
+          node - <<'JS'
+          const fs = require('node:fs');
+          const {parseResult} = require('./.github/agents/policy.cjs');
+          const result = parseResult(fs.readFileSync(process.env.RUNNER_TEMP + '/transport-smoke.json', 'utf8'));
+          if (result.patch.length !== 150011) throw new Error('Cross-job transport was truncated.');
+          JS
       - uses: ./.github/actions/prepare
       - run: node .github/agents/ci.mjs
