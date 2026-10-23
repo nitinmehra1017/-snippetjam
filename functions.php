@@ -60,6 +60,28 @@ function snippetjam_enqueue_assets() {
         return;
     }
 
+    if ( ! is_front_page() && is_page( 'coding-competition' ) ) {
+        $coding_css = snippetjam_asset_version( 'dist/coding-competition/coding-competition.css' );
+        $coding_js  = snippetjam_asset_version( 'dist/coding-competition/coding-competition.js' );
+        if ( false !== $coding_css ) {
+            wp_enqueue_style(
+                'snippetjam-coding',
+                get_stylesheet_directory_uri() . '/dist/coding-competition/coding-competition.css',
+                array( 'snippetjam-style' ),
+                $coding_css
+            );
+        }
+        if ( false !== $coding_css && false !== $coding_js ) {
+            wp_enqueue_script_module(
+                'snippetjam-coding',
+                get_stylesheet_directory_uri() . '/dist/coding-competition/coding-competition.js',
+                array(),
+                $coding_js
+            );
+        }
+        return;
+    }
+
     if ( ! is_front_page() ) {
         return;
     }
@@ -109,3 +131,12 @@ function snippetjam_hackathon_body_class( $classes ) {
     return $classes;
 }
 add_filter( 'body_class', 'snippetjam_hackathon_body_class' );
+
+/** Keep competition layout overrides confined to its own page. */
+function snippetjam_coding_body_class( $classes ) {
+    if ( ! is_front_page() && is_page( 'coding-competition' ) ) {
+        $classes[] = 'snippetjam-coding';
+    }
+    return $classes;
+}
+add_filter( 'body_class', 'snippetjam_coding_body_class' );
