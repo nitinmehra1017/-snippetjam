@@ -82,6 +82,28 @@ function snippetjam_enqueue_assets() {
         return;
     }
 
+    if ( ! is_front_page() && is_page( 'robotics-challenge' ) ) {
+        $robotics_css = snippetjam_asset_version( 'dist/robotics-challenge/robotics-challenge.css' );
+        $robotics_js  = snippetjam_asset_version( 'dist/robotics-challenge/robotics-challenge.js' );
+        if ( false !== $robotics_css ) {
+            wp_enqueue_style(
+                'snippetjam-robotics',
+                get_stylesheet_directory_uri() . '/dist/robotics-challenge/robotics-challenge.css',
+                array( 'snippetjam-style' ),
+                $robotics_css
+            );
+        }
+        if ( false !== $robotics_css && false !== $robotics_js ) {
+            wp_enqueue_script_module(
+                'snippetjam-robotics',
+                get_stylesheet_directory_uri() . '/dist/robotics-challenge/robotics-challenge.js',
+                array(),
+                $robotics_js
+            );
+        }
+        return;
+    }
+
     if ( ! is_front_page() ) {
         return;
     }
@@ -140,3 +162,12 @@ function snippetjam_coding_body_class( $classes ) {
     return $classes;
 }
 add_filter( 'body_class', 'snippetjam_coding_body_class' );
+
+/** Scope robotics overrides to its event page. */
+function snippetjam_robotics_body_class( $classes ) {
+    if ( ! is_front_page() && is_page( 'robotics-challenge' ) ) {
+        $classes[] = 'snippetjam-robotics';
+    }
+    return $classes;
+}
+add_filter( 'body_class', 'snippetjam_robotics_body_class' );

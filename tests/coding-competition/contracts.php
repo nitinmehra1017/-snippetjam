@@ -58,5 +58,5 @@ check( strpos( $content, '<h1' ) === false, 'no duplicate presentation H1' );
 foreach ( array( 'rounds', 'eligibility', 'preparation', 'faq', 'registration' ) as $section ) {
     check( strpos( $content, 'id="sjc-' . $section . '"' ) !== false, $section . ' section exists' );
 }
-check( strpos( file_get_contents( $theme_root . '/style.css' ), 'Version: 1.0.2' ) !== false, 'pattern cache release increment' );
+check( preg_match( '/^Version: ([0-9.]+)/m', file_get_contents( $theme_root . '/style.css' ), $theme_version ) && version_compare( $theme_version[1], '1.0.2', '>=' ), 'pattern cache release increment' );
 echo $checks . ' PHP architecture contracts passed.' . PHP_EOL;
