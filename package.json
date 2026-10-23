@@ -4,10 +4,11 @@
   "private": true,
   "scripts": {
     "dev": "vite build --watch",
-    "build": "vite build && vite build --config vite.hackathon.config.js && vite build --config vite.coding.config.js && vite build --config vite.robotics.config.js",
+    "build": "vite build && vite build --config vite.hackathon.config.js && vite build --config vite.coding.config.js && vite build --config vite.robotics.config.js && vite build --config vite.workshops.config.js",
     "dev:hackathon": "vite build --config vite.hackathon.config.js --watch",
     "dev:coding": "vite build --config vite.coding.config.js --watch",
-    "dev:robotics": "vite build --config vite.robotics.config.js --watch"
+    "dev:robotics": "vite build --config vite.robotics.config.js --watch",
+    "dev:workshops": "vite build --config vite.workshops.config.js --watch"
   },
   "dependencies": {
     "react": "18.3.1",
