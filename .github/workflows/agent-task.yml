@@ -1,0 +1,200 @@
+name: Approved Codex task
+on:
+  issue_comment:
+    types: [created]
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: Open agent-task issue number
+        required: true
+        type: string
+      dry_run:
+        description: Validate approval only; do not invoke Codex or publish
+        type: boolean
+        default: true
+permissions:
+  contents: read
+concurrency:
+  group: agent-task-${{ github.event.issue.number || inputs.issue_number }}
+  cancel-in-progress: false
+jobs:
+  approve:
+    if: >-
+      vars.CODEX_TASKS_ENABLED == 'true' &&
+      (github.event_name == 'workflow_dispatch' ||
+      (github.event.issue.pull_request == null && github.event.comment.body == '/codex implement'))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      issues: read
+      pull-requests: read
+    outputs:
+      task: ${{ steps.approval.outputs.task }}
+      base_sha: ${{ steps.approval.outputs.base_sha }}
+      dry_run: ${{ steps.approval.outputs.dry_run }}
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+      - id: approval
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        with:
+          script: |
+            const { approve } = require(process.env.GITHUB_WORKSPACE + '/.github/agents/policy.cjs');
+            const task = await approve({ github, context });
+            core.setOutput('task', JSON.stringify(task));
+            core.setOutput('base_sha', task.baseSha);
+            core.setOutput('dry_run', context.eventName === 'workflow_dispatch' && context.payload.inputs.dry_run === 'true' ? 'true' : 'false');
+            core.info('Maintainer approval validated; task contents are not logged.');
+
+  generate:
+    needs: approve
+    if: needs.approve.outputs.dry_run != 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    environment: codex-tasks
+    permissions:
+      contents: read
+    outputs:
+      result: ${{ steps.codex.outputs.final-message }}
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          ref: ${{ needs.approve.outputs.base_sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: ./.github/actions/prepare
+      - name: Write approved task data and prompt
+        env:
+          APPROVED_TASK: ${{ needs.approve.outputs.task }}
+          API_KEY_PRESENT: ${{ secrets.CODEX_OPENAI_API_KEY != '' }}
+        run: |
+          node - <<'JS'
+          const fs = require('node:fs');
+          if (process.env.API_KEY_PRESENT !== 'true') throw new Error('Configure CODEX_OPENAI_API_KEY in the codex-tasks environment before running Codex.');
+          const task = JSON.parse(process.env.APPROVED_TASK);
+          fs.writeFileSync('APPROVED_TASK.json', JSON.stringify(task, null, 2));
+          fs.copyFileSync('.github/agents/prompt.md', process.env.RUNNER_TEMP + '/codex-task-prompt.md');
+          JS
+      # Keep Codex last: no write token or privileged post-processing in this runner.
+      - id: codex
+        uses: openai/codex-action@bdf19a4a223ec2549a3e2274a0cf61556bc07675 # v1.13
+        with:
+          openai-api-key: ${{ secrets.CODEX_OPENAI_API_KEY }}
+          codex-version: '0.164.0'
+          permission-profile: ':workspace'
+          safety-strategy: drop-sudo
+          prompt-file: ${{ runner.temp }}/codex-task-prompt.md
+          output-schema-file: .github/agents/result.schema.json
+
+  validate:
+    needs: [approve, generate]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    permissions:
+      contents: read
+    outputs:
+      patch_sha256: ${{ steps.patch.outputs.sha256 }}
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          ref: ${{ needs.approve.outputs.base_sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: ./.github/actions/prepare
+      - id: patch
+        name: Apply frontend-only patch and create a local test commit
+        env:
+          CODEX_RESULT: ${{ needs.generate.outputs.result }}
+        run: |
+          node - <<'JS'
+          const fs = require('node:fs');
+          const { parseResult, applyPatch, git } = require('./.github/agents/policy.cjs');
+          const result = parseResult(process.env.CODEX_RESULT);
+          const applied = applyPatch(result.patch, process.env.RUNNER_TEMP + '/validated-task/changes.patch');
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, 'sha256=' + applied.sha256 + '\n');
+          git('-c', 'user.name=github-actions[bot]', '-c', 'user.email=41898282+github-actions[bot]@users.noreply.github.com', 'commit', '-m', 'Test approved agent candidate');
+          JS
+      - name: Independent production and regression checks (no API key or write credentials)
+        run: node .github/agents/ci.mjs
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: validated-task-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/validated-task/changes.patch
+          retention-days: 1
+          if-no-files-found: error
+
+  publish:
+    needs: [approve, validate]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: read
+      actions: write
+    outputs:
+      pr_url: ${{ steps.publish.outputs.pr_url }}
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          ref: ${{ needs.approve.outputs.base_sha }}
+          fetch-depth: 0
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: validated-task-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/validated-task
+      - id: publish
+        name: Commit the tested patch, push a new branch, open PR, request head-SHA CI
+        env:
+          APPROVED_TASK: ${{ needs.approve.outputs.task }}
+          EXPECTED_PATCH_SHA256: ${{ needs.validate.outputs.patch_sha256 }}
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        with:
+          script: |
+            const fs = require('node:fs');
+            const { revalidate, digest, applyPatch, git } = require(process.env.GITHUB_WORKSPACE + '/.github/agents/policy.cjs');
+            const task = JSON.parse(process.env.APPROVED_TASK);
+            await revalidate({ github, context, task });
+            const patchFile = process.env.RUNNER_TEMP + '/validated-task/changes.patch';
+            const patch = fs.readFileSync(patchFile, 'utf8');
+            if (digest(patch) !== process.env.EXPECTED_PATCH_SHA256) throw new Error('Validated patch digest mismatch.');
+            git('switch', '-c', task.branch);
+            applyPatch(patch, patchFile);
+            git('-c', 'user.name=github-actions[bot]', '-c', 'user.email=41898282+github-actions[bot]@users.noreply.github.com', 'commit', '-m', `Implement approved task #${task.issue}`);
+            git('push', 'origin', `${task.branch}:${task.branch}`);
+            const runURL = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const { data: pr } = await github.rest.pulls.create({ ...context.repo, base: task.baseRef, head: task.branch,
+              title: `Agent task #${task.issue}: ${task.title}`.slice(0, 240),
+              body: `<!-- snippetjam-agent-task:${task.issue} -->\nCloses #${task.issue}.\n\nImplemented on a new feature branch. Independent build, PHP, block-parser, browser/accessibility and regression checks passed before publication.\n\nEvidence: ${runURL}\n\nHuman review and required head-SHA checks are required before merge. No merge or deployment is automated.` });
+            core.setOutput('pr_url', pr.html_url);
+            // GITHUB_TOKEN-created pushes/PRs do not trigger normal push/PR workflows.
+            // Explicit workflow_dispatch does trigger CI on this exact branch head.
+            await github.rest.actions.createWorkflowDispatch({ ...context.repo, workflow_id: 'ci.yml', ref: task.branch });
+
+  respond:
+    needs: [approve, generate, validate, publish]
+    if: always() && needs.approve.result == 'success'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      issues: write
+    steps:
+      - uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        env:
+          APPROVED_TASK: ${{ needs.approve.outputs.task }}
+          DRY_RUN: ${{ needs.approve.outputs.dry_run }}
+          PUBLISH_RESULT: ${{ needs.publish.result }}
+          PR_URL: ${{ needs.publish.outputs.pr_url }}
+        with:
+          script: |
+            const task = JSON.parse(process.env.APPROVED_TASK);
+            const runURL = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const body = process.env.DRY_RUN === 'true'
+              ? `Approval dry run passed for #${task.issue}. Codex was not invoked and no branch or PR was created. ${runURL}`
+              : process.env.PUBLISH_RESULT === 'success'
+                ? `Tested implementation published: ${process.env.PR_URL}\nHead-commit CI was requested. Review successful required checks before merging. No deployment was performed. ${runURL}`
+                : `The agent task did not complete successfully. A branch or PR may have been created if publication failed part-way; inspect this run before retrying: ${runURL}\nNo merge or deployment was performed.`;
+            await github.rest.issues.createComment({ ...context.repo, issue_number: task.issue, body });

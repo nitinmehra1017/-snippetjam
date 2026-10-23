@@ -38,7 +38,7 @@ equal(flat.filter((block) => block.blockName === 'core/post-content').length, 1,
 equal(flat.filter((block) => block.blockName === 'core/post-title')[0].attrs.level, 1, 'native H1');
 check(!render('robotics-challenge', 'raw').includes('wp:pattern '), 'all template patterns resolve');
 for (const asset of ['snippetjam.js', 'snippetjam.css', 'hackathon/hackathon.js', 'hackathon/hackathon.css', 'coding-competition/coding-competition.js', 'coding-competition/coding-competition.css']) {
-    const previous = execFileSync('git', ['show', `b7c4e93:dist/${asset}`], { cwd: root });
+    const previous = execFileSync('git', ['show', `${process.env.SNIPPETJAM_ASSET_BASELINE || "b7c4e93"}:dist/${asset}`], { cwd: root });
     check(previous.equals(readFileSync(path.join(root, 'dist', asset))), `${asset} byte-identical to baseline`);
 }
 

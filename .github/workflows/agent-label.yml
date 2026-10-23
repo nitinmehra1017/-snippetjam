@@ -1,0 +1,25 @@
+name: Install agent-task label
+on:
+  push:
+    branches: [codex/github-agent-workflow]
+  workflow_dispatch:
+permissions:
+  contents: read
+  issues: write
+jobs:
+  label:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        with:
+          script: |
+            const label = { name: 'agent-task', color: 'E4E85C', description: 'Development task; requires a maintainer /codex implement approval.' };
+            try {
+              await github.rest.issues.getLabel({ ...context.repo, name: label.name });
+              core.info('agent-task already exists; preserved its settings.');
+            } catch (error) {
+              if (error.status !== 404) throw error;
+              await github.rest.issues.createLabel({ ...context.repo, ...label });
+              core.info('Created agent-task.');
+            }

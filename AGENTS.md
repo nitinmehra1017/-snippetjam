@@ -206,3 +206,13 @@ Before finishing any section ask:
 If yes, redesign it.
 
 The final result should feel authored rather than generated.
+
+## GitHub collaboration
+
+Approved issue-driven work follows `.github/AGENT_COLLABORATION.md`. Use a new
+feature branch, preserve unrelated pages, commit rebuilt assets, and run the
+existing regression suites. Never merge into the default branch or deploy as
+part of an agent task. A maintainer reviews the PR after successful required
+checks. Credentials belong only in secure environment/GitHub settings, never
+in issue text, source, logs or comments. Changes to automation, tests,
+dependencies or these instructions require a separate maintainer-reviewed task.

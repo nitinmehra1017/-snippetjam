@@ -24,7 +24,7 @@ console.log(execFileSync(php, ['tests/workshops/contracts.php'], { cwd: root, en
 for (const asset of ['snippetjam', 'hackathon/hackathon', 'coding-competition/coding-competition', 'robotics-challenge/robotics-challenge', 'workshops/workshops']) {
     execFileSync(process.execPath, ['--check', 'dist/' + asset + '.js'], { cwd: root });
     if (!asset.startsWith('workshops/')) for (const ext of ['css', 'js']) {
-        const baseline = execFileSync('git', ['show', `e0edf8a:dist/${asset}.${ext}`], { cwd: root });
+        const baseline = execFileSync('git', ['show', `${process.env.SNIPPETJAM_ASSET_BASELINE || "e0edf8a"}:dist/${asset}.${ext}`], { cwd: root });
         check(baseline.equals(readFileSync(path.join(root, 'dist', `${asset}.${ext}`))), `${asset}.${ext} matches baseline`);
     }
 }
