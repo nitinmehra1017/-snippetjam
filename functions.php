@@ -38,6 +38,22 @@ function snippetjam_enqueue_assets() {
         snippetjam_asset_version( 'style.css' )
     );
 
+    // Reuse event header/footer styling on the Schedule page.
+    if ( ! is_front_page() && is_page( 'schedule' ) ) {
+        $event_css = snippetjam_asset_version( 'dist/hackathon/hackathon.css' );
+
+        if ( false !== $event_css ) {
+            wp_enqueue_style(
+                'snippetjam-schedule-event',
+                get_stylesheet_directory_uri() . '/dist/hackathon/hackathon.css',
+                array( 'snippetjam-style' ),
+                $event_css
+            );
+        }
+
+        return;
+    }
+
     if ( ! is_front_page() && is_page( 'hackathon' ) ) {
         $event_css = snippetjam_asset_version( 'dist/hackathon/hackathon.css' );
         $event_js  = snippetjam_asset_version( 'dist/hackathon/hackathon.js' );
