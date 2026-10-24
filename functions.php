@@ -246,3 +246,15 @@ function snippetjam_registration_form_shortcode() {
         . '</div>';
 }
 add_shortcode( 'snippetjam_registration_form', 'snippetjam_registration_form_shortcode' );
+
+/**
+ * Redirect the duplicate Schedule URL to the canonical Schedule page.
+ * Preserve page ID 42 for now rather than deleting WordPress content.
+ */
+function snippetjam_redirect_duplicate_schedule() {
+    if ( is_page( 42 ) ) {
+        wp_safe_redirect( home_url( '/schedule/' ), 301 );
+        exit;
+    }
+}
+add_action( 'template_redirect', 'snippetjam_redirect_duplicate_schedule' );
