@@ -39,7 +39,7 @@ function snippetjam_enqueue_assets() {
     );
 
     // Reuse event header/footer styling on the Schedule page.
-    if ( ! is_front_page() && is_page( array( 'schedule', 'registration' ) ) ) {
+    if ( ! is_front_page() && is_page( array( 'schedule', 'registration', 'about', 'faq', 'events', 'venue-contact' ) ) ) {
         $event_css = snippetjam_asset_version( 'dist/hackathon/hackathon.css' );
 
         if ( false !== $event_css ) {

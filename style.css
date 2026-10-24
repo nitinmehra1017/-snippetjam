@@ -232,3 +232,28 @@ Text Domain: snippetjam
   .sjr-grid {grid-template-columns:1fr;padding:3rem 0}
   .sjr-form-panel {border-left:0;border-top:1px solid var(--sjr-ink);padding:2.5rem 0 0}
 }
+
+/* SnippetJam informational pages */
+.sjx-page{background:#f4f1e9;color:#151611}
+.sjx-skip{position:absolute;left:-9999px}
+.sjx-skip:focus{left:1rem;top:1rem;z-index:100;background:white;padding:1rem}
+.sjx-content{max-width:1600px;margin:auto;padding:clamp(24px,5vw,80px);font-family:Arial,Helvetica,sans-serif}
+.sjx-hero{padding:clamp(2rem,6vw,6rem) 0 3rem;border-bottom:2px solid #151611}
+.sjx-overline{font-size:.75rem;letter-spacing:.12em;font-weight:800}
+.sjx-hero h1{font-size:clamp(3.5rem,10vw,10rem);font-weight:900;letter-spacing:-.075em;line-height:.9;max-width:1250px;margin:2rem 0;overflow-wrap:anywhere}
+.sjx-intro{font-size:clamp(1.25rem,2.8vw,2.5rem);max-width:850px;line-height:1.3}
+.sjx-body{padding:clamp(3rem,6vw,6rem) 0;max-width:1050px}
+.sjx-body h2{font-size:clamp(2.5rem,5vw,5.5rem);font-weight:900;line-height:.95;letter-spacing:-.06em;margin:0 0 2rem}
+.sjx-body p{max-width:730px;line-height:1.7;font-size:clamp(1rem,1.5vw,1.25rem)}
+.sjx-link{display:inline-block;margin-top:2rem;color:#151611;font-weight:800;text-underline-offset:6px}
+.sjx-links{border-top:1px solid #151611;margin:3rem 0}
+.sjx-links a{display:grid;grid-template-columns:40px 1fr 25px;gap:1rem;padding:1.7rem 0;border-bottom:1px solid #151611;color:inherit;text-decoration:none;font-size:clamp(1.3rem,3vw,2.6rem);font-weight:800}
+.sjx-links a:hover,.sjx-links a:focus-visible{text-decoration:underline}
+.sjx-faq{margin:3rem 0;border-top:1px solid #151611}
+.sjx-faq details{border-bottom:1px solid #151611;padding:1.5rem 0}
+.sjx-faq summary{cursor:pointer;font-size:clamp(1.1rem,2.5vw,1.8rem);font-weight:700}
+.sjx-faq summary:focus-visible{outline:3px solid #9aa000;outline-offset:5px}
+.sjx-end{background:#eff45d;padding:clamp(2rem,4vw,4rem);display:flex;justify-content:space-between;align-items:end;gap:2rem}
+.sjx-end p{font-size:clamp(2.5rem,6vw,6rem);font-weight:900;letter-spacing:-.06em;line-height:.9;margin:0}
+.sjx-end a{color:#151611;font-weight:800;text-underline-offset:5px}
+@media(max-width:700px){.sjx-end{align-items:start;flex-direction:column}.sjx-links a{grid-template-columns:25px 1fr 20px}}
