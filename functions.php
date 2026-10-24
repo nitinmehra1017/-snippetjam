@@ -39,7 +39,7 @@ function snippetjam_enqueue_assets() {
     );
 
     // Reuse event header/footer styling on the Schedule page.
-    if ( ! is_front_page() && is_page( 'schedule' ) ) {
+    if ( ! is_front_page() && is_page( array( 'schedule', 'registration' ) ) ) {
         $event_css = snippetjam_asset_version( 'dist/hackathon/hackathon.css' );
 
         if ( false !== $event_css ) {
@@ -218,3 +218,31 @@ function snippetjam_workshops_body_class( $classes ) {
     return $classes;
 }
 add_filter( 'body_class', 'snippetjam_workshops_body_class' );
+
+/**
+ * SnippetJam event registration.
+ * Closed by default until the form and privacy handling are reviewed.
+ */
+function snippetjam_registration_form_shortcode() {
+    $form_id = 63;
+    $registration_open = (bool) get_option( 'snippetjam_registration_open', false );
+    $privacy_url = get_privacy_policy_url();
+
+    if (
+        ! $registration_open ||
+        'publish' !== get_post_status( $form_id ) ||
+        empty( $privacy_url ) ||
+        ! shortcode_exists( 'forminator_form' )
+    ) {
+        return '<div class="sjr-closed" role="status">'
+            . '<span class="sjr-closed-mark">REGISTRATION STATUS / NOT YET OPEN</span>'
+            . '<h3>COMING SOON.</h3>'
+            . '<p>Registration is not open yet. Explore the events and check back for confirmed details.</p>'
+            . '</div>';
+    }
+
+    return '<div class="sjr-live-form">'
+        . do_shortcode( '[forminator_form id="63"]' )
+        . '</div>';
+}
+add_shortcode( 'snippetjam_registration_form', 'snippetjam_registration_form_shortcode' );
