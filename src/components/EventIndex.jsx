@@ -1,3 +1,4 @@
+import { trackSnippetJamEvent } from '../analytics.js';
 import { useEffect, useState } from 'react';
 import diagram from '../../assets/event-diagram.svg?raw';
 
@@ -19,7 +20,7 @@ export function EventIndex({ events }) {
                         </a>
                         <button className="sj-event-switch" type="button" hidden={!enhanced}
                             aria-label={'Preview ' + event.title} aria-pressed={index === activeIndex}
-                            onClick={() => setActiveIndex(index)}><span aria-hidden="true">↗</span></button>
+                            onClick={() => { setActiveIndex(index); trackSnippetJamEvent('event_preview', { event_name: event.slug }); }}><span aria-hidden="true">↗</span></button>
                     </div>
                 ))}
             </div>

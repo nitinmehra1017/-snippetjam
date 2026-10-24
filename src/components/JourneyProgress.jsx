@@ -1,3 +1,4 @@
+import { trackSnippetJamEvent } from '../analytics.js';
 import { useEffect, useState } from 'react';
 
 export function JourneyProgress() {
@@ -84,7 +85,10 @@ export function JourneyProgress() {
                 select(index);
             };
             listen(button, 'focus', choose);
-            listen(button, 'click', choose); // Native Enter/Space and touch taps use the same selection.
+            listen(button, 'click', () => {
+                choose();
+                trackSnippetJamEvent('journey_step_select', { step_number: index + 1 });
+            }); // Native Enter/Space and touch taps use the same selection.
             listen(step, 'pointerenter', (event) => {
                 if (!hoverInput.matches || event.pointerType !== 'mouse' || suppressHover) return;
                 pointerPosition = [event.clientX, event.clientY];
