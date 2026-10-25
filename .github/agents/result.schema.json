@@ -1,0 +1,9 @@
+{
+  "type": "object",
+  "properties": {
+    "patch": { "type": "string", "description": "Complete git diff --binary patch including new files; at most 350000 characters." },
+    "summary": { "type": "string", "description": "Short implementation summary, at most 2000 characters; no credentials." }
+  },
+  "required": ["patch", "summary"],
+  "additionalProperties": false
+}
